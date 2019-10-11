@@ -14,7 +14,7 @@ def get_extensions():
 
     main_source = os.path.join(extensions_dir, "vision.cpp")
     sources = glob.glob(os.path.join(extensions_dir, "**", "*.cpp"))
-    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "*.cu"))
+    source_cuda = glob.glob(os.path.join(extensions_dir, "**", "*.hip"))
 
     sources = [main_source] + sources
 
@@ -28,14 +28,16 @@ def get_extensions():
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
         extra_compile_args["nvcc"] = [
+            "-D__HIP_PLATFORM_HCC__=1",
+            "-fPIC",
             "-DCUDA_HAS_FP16=1",
-            "-D__CUDA_NO_HALF_OPERATORS__",
-            "-D__CUDA_NO_HALF_CONVERSIONS__",
-            "-D__CUDA_NO_HALF2_OPERATORS__",
+            "-D__HIP_NO_HALF_OPERATORS__",
+            "-D__HIP_NO_HALF_CONVERSIONS__",
         ]
 
         # It's better if pytorch can do this by default ..
         CC = os.environ.get("CC", None)
+        print ("CC Value is : {}".format(CC))
         if CC is not None:
             extra_compile_args["nvcc"].append("-ccbin={}".format(CC))
 
